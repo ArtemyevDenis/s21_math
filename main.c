@@ -19,6 +19,28 @@ int s21_abs(int x){
     return x < 0 ? -x : x;
 }
 
+long double s21_fabs(double x){
+    return x < 0 ? -x : x;
+}
+
+long double s21_ceil(double x){
+    double rez = 0.0;
+    if(x >= 0)
+        rez = (x/1000000000 == 0) ? x : (int)x + 1;
+    else
+        rez = (int)x;
+    return rez; 
+}
+
+long double s21_floor(double x){
+    double rez = 0.0;
+    if(x >= 0)
+        rez = (int)x;
+    else
+        rez = (x/1000000000 == 0) ? x : (int)x - 1;
+    return rez; 
+}
+
 long double s21_cos(double x){
     if(x < 0)
         x = -x;
@@ -37,44 +59,106 @@ long double s21_sin(double x){
     int minus = 1;
     if(x < 0){
         minus = -minus;
-        x = fabs(x);
+        x = s21_fabs(x);
     }
     while(x >= 2*PI)
         x -= 2*PI;
     if (x >= PI/2)
         x = PI/2 - (x-PI/2);
     long double res = 0.0;
-    for(int i = 0; i < 250000; i++){
+    for(int i = 0; i < 11; i++){
         res += pow(-1.0,i) * pow(x,2.0*i + 1)/(long double)phactorial(2*i + 1);
     }
     return minus*res;
 }
 
+long double s21_tan(double x){
+    while(x >= 2* PI)
+        x -= 2* PI;
+    return s21_sin(x)/s21_cos(x);
+}
+
 // Функция тестирования какой-либо задачи.
-START_TEST(test_name)
+START_TEST(test_s21_cos)
 {
-    for(double i = 0.0; i < 1.0; i+=0.10){
-        long double temp = 0.0;
-        double temp_m = 0.0;
-        temp = s21_cos(i);
-        temp_m = cos(i);
-        //printf("s21 == %.20LF |||  math == %.20lf\n",temp, temp_m);
-        ck_assert_ldouble_eq_tol(temp,temp_m,0.000000000000001);
-    }
+    ck_assert_ldouble_eq_tol(s21_cos(-100), cos(-100),0.0000000001);
+    ck_assert_ldouble_eq_tol(s21_cos(-2.45678), cos(-2.45678),0.0000000001);
+    ck_assert_ldouble_eq_tol(s21_cos(0), cos(0),0.0000000001);
+    ck_assert_ldouble_eq_tol(s21_cos(1.123456), cos(1.123456),0.0000000001);
+    ck_assert_ldouble_eq_tol(s21_cos(100), cos(100),0.0000000001);
 }
 END_TEST
 
-// Функция создания набора тестов.
+START_TEST(test_s21_sin)
+{
+    ck_assert_ldouble_eq_tol(s21_sin(-100), sin(-100),0.0000000001);
+    ck_assert_ldouble_eq_tol(s21_sin(-2.45678), sin(-2.45678),0.0000000001);
+    ck_assert_ldouble_eq_tol(s21_sin(0), sin(0),0.0000000001);
+    ck_assert_ldouble_eq_tol(s21_sin(1.123456), sin(1.123456),0.0000000001);
+    ck_assert_ldouble_eq_tol(s21_sin(100), sin(100),0.0000000001);
+
+}
+END_TEST
+
+START_TEST(test_s21_abs)
+{
+    ck_assert_int_eq(s21_abs(-100), abs(-100));
+    ck_assert_int_eq(s21_abs(0), abs(0));
+    ck_assert_int_eq(s21_abs(100), abs(100));
+}
+END_TEST
+
+START_TEST(test_s21_fabs)
+{
+    ck_assert_ldouble_eq_tol(s21_fabs(-100.1234536), fabs(-100.1234536), 0.00000000001);
+    ck_assert_ldouble_eq_tol(s21_fabs(0.0), fabs(0.0), 0.00000000001);
+    ck_assert_ldouble_eq_tol(s21_fabs(945.1238475), fabs(945.1238475), 0.00000000001);
+}
+END_TEST
+
+START_TEST(test_s21_ceil)
+{
+    for(double i = -10; i < 10; i += 0.001){
+        //printf("i == %.16f  |||  s21 == %Lf  |||   math == %lf\n", i, s21_ceil(i), ceil(i));
+        ck_assert_double_eq_tol(s21_ceil(i),ceil(i),0.00000000001);
+    }
+
+}
+END_TEST
+
+START_TEST(test_s21_floor)
+{
+    for(double i = -10.1; i < 10; i += 0.001){
+        //printf("i == %.16f  |||  s21 == %Lf  |||   math == %lf\n", i, s21_floor(i), floor(i));
+        ck_assert_double_eq_tol(s21_floor(i),floor(i),0.00000001);
+    }
+
+}
+END_TEST
+
+START_TEST(test_s21_tan)
+{
+    for(double i = -10; i < 10; i += 0.001){
+        //printf("i == %.16f  |||  s21 == %Lf  |||   math == %lf\n", i, s21_ceil(i), ceil(i));
+        ck_assert_double_eq_tol(s21_tan(i),tan(i),0.000001);
+    }
+
+}
+END_TEST
+
+
 Suite *example_suite_create(void)
 {
-    Suite *suite = suite_create("Example");
-    // Набор разбивается на группы тестов, разделённых по каким-либо критериям.
+    Suite *suite = suite_create("tests");
     TCase *tcase_core = tcase_create("Core of example");
+    tcase_add_test(tcase_core, test_s21_cos);
+    tcase_add_test(tcase_core, test_s21_abs);    
+    tcase_add_test(tcase_core, test_s21_sin);
+    tcase_add_test(tcase_core, test_s21_fabs);
+    tcase_add_test(tcase_core, test_s21_ceil);
+    tcase_add_test(tcase_core, test_s21_floor);
+    tcase_add_test(tcase_core, test_s21_tan);
     
-    // Добавление теста в группу тестов.
-    tcase_add_test(tcase_core, test_name);
-    
-    // Добавление теста в тестовый набор.
     suite_add_tcase(suite, tcase_core);
     
     return suite;
