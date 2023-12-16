@@ -5,6 +5,13 @@
 
 #define PI 3.141592653589793238462643383279 
 
+long double help_pow(double x, int count){
+    long double res = 1.0;
+    for (int i = 0 ; i < count; i++)
+        res*= x;
+    return res;
+}
+
 double phactorial(int n){
     double rez = 1.0;
     if(n == 0 || n == 1)
@@ -42,6 +49,7 @@ long double s21_floor(double x){
 }
 
 long double s21_cos(double x){
+    int znak = 1;
     if(x < 0)
         x = -x;
     while(x >= 2*PI)
@@ -49,14 +57,15 @@ long double s21_cos(double x){
     if (x >= PI)
         x = (double)(PI - (x-PI));
     double res = 0.0;
-    for(int i = 0; i < 11; i++){
-        res += pow(-1.0,i) * pow(x,2.0*i)/phactorial(2*i);
+    for(int i = 10; i >= 0; i--){
+        znak = (i%2 == 0) ? 1 : -1;
+        res +=  znak* help_pow(x*x,i)/phactorial(2*i);
     }
     return res;
 }
 
 long double s21_sin(double x){
-    int minus = 1;
+    int minus = 1, znak = 1;
     if(x < 0){
         minus = -minus;
         x = s21_fabs(x);
@@ -66,8 +75,9 @@ long double s21_sin(double x){
     if (x >= PI/2)
         x = PI/2 - (x-PI/2);
     long double res = 0.0;
-    for(int i = 0; i < 11; i++){
-        res += pow(-1.0,i) * pow(x,2.0*i + 1)/(long double)phactorial(2*i + 1);
+    for(int i = 10; i >= 0; i--){
+        znak = (i%2 == 0) ? 1 : -1;
+        res += znak * (help_pow(x*x,i) * x)/(long double)phactorial(2*i + 1);
     }
     return minus*res;
 }
@@ -81,7 +91,7 @@ long double s21_tan(double x){
 // Функция тестирования какой-либо задачи.
 START_TEST(test_s21_cos)
 {
-    ck_assert_ldouble_eq_tol(s21_cos(-100), cos(-100),0.0000000001);
+    ck_assert_ldouble_eq_tol(s21_cos(-100), cos(-100),0.0000000000001);
     ck_assert_ldouble_eq_tol(s21_cos(-2.45678), cos(-2.45678),0.0000000001);
     ck_assert_ldouble_eq_tol(s21_cos(0), cos(0),0.0000000001);
     ck_assert_ldouble_eq_tol(s21_cos(1.123456), cos(1.123456),0.0000000001);
