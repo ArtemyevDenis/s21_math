@@ -1,37 +1,49 @@
 #include <stdio.h>
 #include <math.h>
 
-long double help_pow(double x, int count){
-    long double res = 1.0;
-    for (int i = 0 ; i < count; i++)
-        res*= x;
-    return res;
-}
-
-double phactorial(int n){
-    double rez = 1.0;
-    if(n == 0 || n == 1)
-        rez = 1;
-    else
-        for(int i = 1; i <= n; i++)
-            rez*=i;
-    return rez;
-}
-
 long double s21_exp(double x){
-	long double res = 0.0;
-	double es = 2.71828182846;
-	double ksi = (x - 0) / 6.678;
-	long int fac = 1;
-	for(int i = 0 ; i < 20; i++){
-		if(i > 0)
-			fac *=i;
-		res+= help_pow(x,i)/fac;
+	long double res = 1.0;
+	double temp = 1.0;
+	double helper = fabs(x);
+	for(int i = 1 ; i <= 50; i++){
+		temp = (temp*helper)/i;
+		res = res + temp;
 	}
-	//res += pow(es,ksi) * help_pow(x,21) / phactorial(21);
+	if(x<0)
+		res = 1.0/res;
 	return res;
 }
+
+long double s21_log(double x){
+	double yn1 = 0.0;
+	if (x != 0){
+		double yn = x - 1.0; // using the first term of the taylor series as initial-value
+		 yn1= yn;
+		do
+		{
+			yn = yn1;
+			yn1 = yn + 2 * (x - s21_exp(yn)) / (x + s21_exp(yn));
+		} while (fabs(yn - yn1) > 0.000000000001);
+	}
+	else 
+		yn1 = 1;
+    return yn1;
+}
+
+long double s21_pow(double base, double exp){
+	return s21_exp(s21_log(base) * exp);
+}
+
 int main(){
-	for (int i = 0; i < 11; i++)
-		printf("%.15Lf  ||||    %.15lf\n",s21_exp(i), exp(i));
+	int suc = 0, fail = 0;
+	for (double i = -1; i < 1; i+=0.0001)
+		if(s21_pow(i,i) - pow(i,i) < 0.00000000001)
+			suc++;
+		else
+			fail++;
+	printf("suc == %d\nfail == %d\n", suc, fail);
+	// while(s21_exp(10,count) - exp(10) > 0.0000000001){
+	// 	count+= 0.0001;
+	// }
+	// printf("%lf", count);
 }
