@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "stdio.h": "c",
-        "limits": "c"
+        "limits": "c",
+        "math.h": "c"
     }
 }
